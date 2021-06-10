@@ -1,0 +1,364 @@
+resources:
+- name: iautomatewindowvmweb
+  type: compute.v1.instance
+  properties:
+    zone: us-west1-b
+    machineType: https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/zones/us-west1-b/machineTypes/e2-standard-4
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        diskName: disk-window-287805
+        diskSizeGb: 80
+        sourceImage: https://www.googleapis.com/compute/v1/projects/windows-cloud/global/images/windows-server-2016-dc-v20201208
+    networkInterfaces:
+    - network:  https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/global/networks/default
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    metadata:
+      items:
+      - key: sysprep-specialize-script-ps1
+        value: |
+         $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force 
+         New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account." 
+         Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
+         write-output "Running User Data Script" >> test.txt
+         write-host "(host) Running User Data Script"
+         cmd.exe /c winrm quickconfig -q 
+         cmd.exe /c winrm quickconfig '-transport:http'
+         cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
+         cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
+         cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
+         cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
+         cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
+         cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
+         cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
+         cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
+         cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
+         cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
+         cmd.exe /c net stop winrm
+         cmd.exe /c sc config winrm start= auto
+         cmd.exe /c net start winrm
+         cmd.exe /c net user Administrator Qazxsw@123
+         cmd.exe /c net user administrator /active:yes         
+    tags:
+      items:
+      - http
+    serviceAccounts:
+    - email: siddharth-c@dryicepoc-242713.iam.gserviceaccount.com
+      scopes:
+      - https://www.googleapis.com/auth/devstorage.read_only
+      - https://www.googleapis.com/auth/logging.write
+      - https://www.googleapis.com/auth/monitoring.write
+      - https://www.googleapis.com/auth/servicecontrol
+      - https://www.googleapis.com/auth/service.management.readonly
+      
+- name: iautomatewindowvmapp
+  type: compute.v1.instance
+  properties:
+    zone: us-west1-b
+    machineType: https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/zones/us-west1-b/machineTypes/e2-standard-4
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        diskName: disk-window-287806
+        diskSizeGb: 80
+        sourceImage: https://www.googleapis.com/compute/v1/projects/windows-cloud/global/images/windows-server-2016-dc-v20201208
+    networkInterfaces:
+    - network:  https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/global/networks/default
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    metadata:
+      items:
+      - key: sysprep-specialize-script-ps1
+        value: |
+         $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force 
+         New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account." 
+         Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
+         write-output "Running User Data Script" >> test.txt
+         write-host "(host) Running User Data Script"
+         cmd.exe /c winrm quickconfig -q 
+         cmd.exe /c winrm quickconfig '-transport:http'
+         cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
+         cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
+         cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
+         cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
+         cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
+         cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
+         cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
+         cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
+         cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
+         cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
+         cmd.exe /c net stop winrm
+         cmd.exe /c sc config winrm start= auto
+         cmd.exe /c net start winrm
+    tags:
+      items:
+      - http
+    serviceAccounts:
+    - email: siddharth-c@dryicepoc-242713.iam.gserviceaccount.com
+      scopes:
+      - https://www.googleapis.com/auth/devstorage.read_only
+      - https://www.googleapis.com/auth/logging.write
+      - https://www.googleapis.com/auth/monitoring.write
+      - https://www.googleapis.com/auth/servicecontrol
+      - https://www.googleapis.com/auth/service.management.readonly
+      
+- name: iautomatewindowvmsql
+  type: compute.v1.instance
+  properties:
+    zone: us-west1-b
+    machineType: https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/zones/us-west1-b/machineTypes/e2-standard-4
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        diskName: disk-window-287807
+        diskSizeGb: 80
+        sourceImage: https://www.googleapis.com/compute/v1/projects/windows-sql-cloud/global/images/sql-2017-web-windows-2019-dc-v20201208
+    networkInterfaces:
+    - network:  https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/global/networks/default
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    metadata:
+      items:
+      - key: sysprep-specialize-script-ps1
+        value: |
+         $Query = @"
+         USE [master];
+         GO
+         CREATE LOGIN admin
+         WITH PASSWORD    = N'h8n5b3U3M4C1',
+         CHECK_POLICY     = OFF,
+         CHECK_EXPIRATION = OFF;
+         GO
+         EXEC sp_addsrvrolemember 
+         @loginame = N'admin', 
+         @rolename = N'sysadmin';
+         "@
+         Invoke-Sqlcmd -ServerInstance localhost -Query $Query
+         write-output "User Creation Done...." >> c:\itest.log
+         $Query = @"
+         USE [master]
+         GO
+         EXEC xp_instance_regwrite N'HKEY_LOCAL_MACHINE', 
+         N'Software\Microsoft\MSSQLServer\MSSQLServer',
+         N'LoginMode', REG_DWORD, 2
+         GO
+         "@
+         Invoke-Sqlcmd -ServerInstance localhost -Query $Query
+         Stop-Service MSSQLSERVER
+         Start-Service MSSQLSERVER         
+         start-sleep -s 10
+         write-output "User SQL Authentication Done...." >> c:\itest.log
+         $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force 
+         New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account." 
+         Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
+         write-output "User Creation Done...." >> c:\itest.log
+         write-output "Running User Data Script" >> test.txt
+         write-host "(host) Running User Data Script"
+         cmd.exe /c winrm quickconfig -q 
+         cmd.exe /c winrm quickconfig '-transport:http'
+         cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
+         cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
+         cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
+         cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
+         cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
+         cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
+         cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
+         cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
+         cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
+         cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
+         cmd.exe /c net stop winrm
+         cmd.exe /c sc config winrm start= auto
+         cmd.exe /c net start winrm
+         write-output "Script End...." >> c:\itest.log
+                   
+    tags:
+      items:
+      - http
+    serviceAccounts:
+    - email: siddharth-c@dryicepoc-242713.iam.gserviceaccount.com
+      scopes:
+      - https://www.googleapis.com/auth/devstorage.read_only
+      - https://www.googleapis.com/auth/logging.write
+      - https://www.googleapis.com/auth/monitoring.write
+      - https://www.googleapis.com/auth/servicecontrol
+      - https://www.googleapis.com/auth/service.management.readonly
+- name: iautomatevm
+  type: compute.v1.instance
+  properties:
+    zone: us-west1-b
+    machineType: https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/zones/us-west1-b/machineTypes/e2-standard-4
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        diskName: disk-learncicd-287808
+        diskSizeGb: 80
+        sourceImage: https://www.googleapis.com/compute/v1/projects/rhel-cloud/global/images/rhel-7-v20201216
+    networkInterfaces:
+    - network:  https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/global/networks/default
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+         #!/bin/bash
+         sudo su -
+         yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+         yum install ansible -y
+         /bin/sleep 20
+         yum install gcc krb5-devel krb5-workstation -y
+         /bin/sleep 20
+         yum install python-setuptools -y
+         /bin/sleep 20
+         yum install python-pip -y
+         /bin/sleep 20
+         pip install pywinrm
+         mkdir /etc/ansible/group_vars
+         cd /etc/ansible
+         gsutil cp gs://dryiceiautomate/hosts .          
+          
+         echo "******Creating User*******" >> /tmp/iautomate.log
+         useradd ansible
+         usermod -aG wheel ansible
+         sudo passwd ansible
+         echo Qazxsw@123 | passwd ansible  --stdin
+          
+         echo "******Downloading Resource Files*******" >> /tmp/iautomate.log          
+         gsutil cp gs://dryiceiautomate/jenkins-sa.json .
+         gsutil cp gs://dryiceiautomate/ansible_varibales_template.txt .
+         gcloud auth activate-service-account --key-file=jenkins-sa.json
+         gsutil cp gs://dryiceiautomate/host.txt /etc/ansible/group_vars 
+         gsutil cp gs://dryiceiautomate/awx.yml /etc/ansible/group_vars 
+         gsutil cp gs://dryiceiautomate/iautomate.yml /etc/ansible/group_vars
+         sudo chmod 777 host.txt
+         mkdir -p /etc/ansible/resources
+         cd /etc/ansible/resources
+         gsutil cp -r gs://dryiceiautomate/reource/roles.zip .
+         /bin/sleep 1m
+         sudo yum install unzip -y
+         /bin/sleep 1m
+         
+         echo "******Unziping Role Folder*******" >> /tmp/iautomate.log          
+         unzip roles.zip
+         /bin/sleep 1m
+         
+         echo "******Updating IP in files*******" >> /tmp/iautomate.log          
+         zoo_ip1=$(grep "zoo_ip1:" /etc/ansible/resources/roles/common_variables.yml)
+         ai_server=$(grep "ai_server:" /etc/ansible/resources/roles/common_variables.yml)
+         mongo_server=$(grep "mongo_server:" /etc/ansible/resources/roles/common_variables.yml)
+         solr_server=$(grep "solr_server:" /etc/ansible/resources/roles/common_variables.yml)
+         web_server=$(grep "web_server:" /etc/ansible/resources/roles/common_variables.yml)
+         app_server=$(grep "app_server:" /etc/ansible/resources/roles/common_variables.yml)
+         sql_server=$(grep "sql_server:" /etc/ansible/resources/roles/common_variables.yml)
+         awx_ip=$(grep "awx_ip:" /etc/ansible/resources/roles/common_variables.yml)
+         export ExtIP_Win1=$(gcloud compute instances describe iautomatewindowvmweb --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
+         export ExtIP_Win2=$(gcloud compute instances describe iautomatewindowvmsql --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
+         export ExtIP_Win3=$(gcloud compute instances describe iautomatewindowvmapp --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
+         export ExtIP_Linux4=$(gcloud compute instances describe iautomatevm --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
+         
+         new_zoo_ip1="zoo_ip1: $ExtIP_Win3"
+         new_ai_server="ai_server: $ExtIP_Win3"
+         new_mongo_server="mongo_server: $ExtIP_Win3"
+         new_solr_server="solr_server: $ExtIP_Win3"
+         new_web_server="web_server: $ExtIP_Win1"
+         new_app_server="app_server: $ExtIP_Win1"
+         new_sql_server="sql_server: $ExtIP_Win2"
+         new_awx_ip="awx_ip: $ExtIP_Linux4"
+         
+         sed -i "s|$zoo_ip1|$new_zoo_ip1|g" /etc/ansible/resources/roles/common_variables.yml
+         sed -i "s|$ai_server|$new_ai_server|g" /etc/ansible/resources/roles/common_variables.yml
+         sed -i "s|$mongo_server|$new_mongo_server|g" /etc/ansible/resources/roles/common_variables.yml
+         sed -i "s|$solr_server|$new_solr_server|g" /etc/ansible/resources/roles/common_variables.yml
+         sed -i "s|$web_server|$new_web_server|g" /etc/ansible/resources/roles/common_variables.yml
+         sed -i "s|$app_server|$new_app_server|g" /etc/ansible/resources/roles/common_variables.yml
+         sed -i "s|$sql_server|$new_sql_server|g" /etc/ansible/resources/roles/common_variables.yml
+         sed -i "s|$awx_ip|$new_awx_ip|g" /etc/ansible/resources/roles/common_variables.yml
+         sed -i "s|PasswordAuthentication no|PasswordAuthentication yes|g" /etc/ssh/sshd_config
+         sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config
+         sed -i "s|#   PasswordAuthentication yes|   PasswordAuthentication yes|g" /etc/ssh/ssh_config
+         service sshd restart
+         chmod 0777 /etc/sudoers
+         chmod 0777 /etc/ansible/ansible.cfg
+         sed -i "s|#host_key_checking |host_key_checking |g" /etc/ansible/ansible.cfg
+         chmod 0644 /etc/ansible/ansible.cfg
+         echo "ansible        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
+         chmod 0440 /etc/sudoers
+         server1=$(grep "SERVER1" /etc/ansible/hosts | cut -d":" -f2)
+         serverweb=$(echo $server1 | cut -d" " -f2)
+         sed -i "s|$serverweb|$ExtIP_Win1|g" /etc/ansible/hosts
+         server2=$(grep "SERVER2" /etc/ansible/hosts | cut -d":" -f2)
+         serverser3=$(echo $server2 | cut -d" " -f2)
+         sed -i "s|$serverser3|$ExtIP_Win3|g" /etc/ansible/hosts
+         server3=$(grep "SERVER3" /etc/ansible/hosts | cut -d":" -f2)
+         serversql=$(echo $server3| cut -d" " -f2)
+         sed -i "s|$serversql|$ExtIP_Win2|g" /etc/ansible/hosts
+         linux_server1=$(grep "linux_server1" /etc/ansible/hosts | cut -d":" -f2)
+         awx_linux_server1=$(echo $linux_server1| cut -d" " -f2)
+         sed -i "s|$awx_linux_server1|$ExtIP_Linux4|g" /etc/ansible/hosts
+         
+         echo "******Installing iAutomate *******" >> /tmp/iautomate.log          
+         echo "vault" > /etc/ansible/vault
+         cd /etc/ansible/resources/roles
+         ansible-playbook iautomate_installation_all.yml --vault-password-file /etc/ansible/vault  >> /tmp/iautomate.log
+                              
+    tags:
+      items:
+      - http
+    serviceAccounts:
+    - email: siddharth-c@dryicepoc-242713.iam.gserviceaccount.com
+      scopes:
+      - https://www.googleapis.com/auth/devstorage.read_only
+      - https://www.googleapis.com/auth/logging.write
+      - https://www.googleapis.com/auth/monitoring.write
+      - https://www.googleapis.com/auth/servicecontrol
+      - https://www.googleapis.com/auth/service.management.readonly
+      - https://www.googleapis.com/auth/trace.append      
+- type: compute.v1.firewall
+  name: default-allow-http
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/dryicepoc-242713/global/networks/default
+    targetTags: 
+    - http
+    allowed:
+    - IPProtocol: tcp
+      ports: 
+      - '8080'
+      - '80'
+      - '8012'
+      - '8015'
+      - '8006'
+      - '9000'
+      - '8009'
+      - '8018'
+      - '8021'
+      - '9022'
+      - '9025'
+      - '9009'
+      - '9009'
+      - '8024'
+      - '8030'
+      - '8027'
+      - '9003'
+      - '9006'
+      - '9013'
+      - '9016'
+      - '9019'
+    sourceRanges:
+    - 0.0.0.0/0
