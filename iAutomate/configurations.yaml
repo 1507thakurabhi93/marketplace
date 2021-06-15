@@ -33,7 +33,7 @@ metadata:
 spec:
   # See https://pkg.go.dev/github.com/GoogleCloudPlatform/marketplace-tools/mpdev/internal/apply?tab=doc#PackageInfo
   packageInfo:
-    version: '1.0'
+    version: '1.1'
     osInfo:
       name: Debian
       version: '9.12'
