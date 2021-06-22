@@ -98,8 +98,8 @@ spec:
             gceMachineType: e2-standard-4
         networkInterfaces:
           minCount: 1
-      - name: iautomatewindowvmweb
-        title: iautomatewindowvmweb
+      - name: iautomatewindowvmapp
+        title: iautomatewindowvmapp
         bootDisk:
           diskSize:
             defaultSizeGb: 80
