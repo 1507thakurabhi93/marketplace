@@ -33,19 +33,19 @@ metadata:
 spec:
   # See https://pkg.go.dev/github.com/GoogleCloudPlatform/marketplace-tools/mpdev/internal/apply?tab=doc#PackageInfo
   packageInfo:
-    version: "1.0"
+    version: '1.0'
     osInfo:
       name: windows-server-2016
-      version: "windows-server-2016-dc-v20210608"
+      version: 'windows-server-2016-dc-v20210608'
     components:
-      - name: iautomatelinuxvmansible,
-        version: "1.0"
-      - name: iautomatewinvmweb,
-        version: "1.0"
-      - name: iautomatewinvmsql,
-        version: "1.0"
-      - name: iautomatewinvmapp,
-        version: "1.0"
+    - name: iautomatelinuxvmansible,
+      version: '1.0'
+    - name: iautomatewinvmweb,
+      version: '1.0'
+    - name: iautomatewinvmsql,
+      version: '1.0'
+    - name: iautomatewinvmapp,
+      version: '1.0'
   # See https://github.com/GoogleCloudPlatform/marketplace-tools/docs/autogen-reference.md
   # for explanation of fields
   deploymentSpec:
@@ -53,287 +53,331 @@ spec:
       zone:
         defaultZone: us-west1-b
       tiers:
-        - name: iautomatewinvmweb
-          title: iautomatewinvmweb
-          bootDisk:
-            diskSize:
-              defaultSizeGb: 80
-              minSizeGb: 80
-            diskType:
-              defaultType: pd-standard
-          images:
-            - name: windows-server-2016-dc-v20210309
-              project: windows-cloud
-          instanceCount:
-            defaultValue: 1
-          gce_metadata_items:
-            - key: windows-startup-script-ps1
-              value: |
-                $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force
-                New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account."
-                Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
-                write-output "Running User Data Script" >> test.txt
-                write-host "(host) Running User Data Script"
-                cmd.exe /c winrm quickconfig -q
-                cmd.exe /c winrm quickconfig '-transport:http'
-                cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
-                cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
-                cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
-                cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
-                cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
-                cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
-                cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
-                cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
-                cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
-                cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
-                cmd.exe /c net stop winrm
-                cmd.exe /c sc config winrm start= auto
-                cmd.exe /c net start winrm
-                cmd.exe /c net user Administrator Qazxsw@123
-                cmd.exe /c net user administrator /active:yes
-          gcpAuthScopes:
-            - scope: CLOUD_PLATFORM
-              notConfigurable: true
-          machineType:
-            defaultMachineType:
-              gceMachineType: e2-standard-4
-          networkInterfaces:
-            minCount: 1
-        - name: iautomatewinvmsql
-          title: iautomatewinvmsql
-          bootDisk:
-            diskSize:
-              defaultSizeGb: 80
-              minSizeGb: 80
-            diskType:
-              defaultType: pd-standard
-          images:
-            - name: sql-2017-web-windows-2019-dc-v20210608
-              project: windows-sql-cloud
-          instanceCount:
-            defaultValue: 1
-          gce_metadata_items:
-            - key: windows-startup-script-ps1
-              value: |
-                $Query = @"
-                USE [master];
-                GO
-                CREATE LOGIN admin
-                WITH PASSWORD    = N'h8n5b3U3M4C1',
-                CHECK_POLICY     = OFF,
-                CHECK_EXPIRATION = OFF;
-                GO
-                EXEC sp_addsrvrolemember 
-                @loginame = N'admin', 
-                @rolename = N'sysadmin';
-                "@
-                Invoke-Sqlcmd -ServerInstance localhost -Query $Query
-                write-output "User Creation Done...." >> c:\itest.log
-                $Query = @"
-                USE [master]
-                GO
-                EXEC xp_instance_regwrite N'HKEY_LOCAL_MACHINE', 
-                N'Software\Microsoft\MSSQLServer\MSSQLServer',
-                N'LoginMode', REG_DWORD, 2
-                GO
-                "@
-                Invoke-Sqlcmd -ServerInstance localhost -Query $Query
-                Stop-Service MSSQLSERVER
-                Start-Service MSSQLSERVER         
-                start-sleep -s 10
-                write-output "User SQL Authentication Done...." >> c:\itest.log
-                $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force 
-                New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account." 
-                Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
-                write-output "User Creation Done...." >> c:\itest.log
-                write-output "Running User Data Script" >> test.txt
-                write-host "(host) Running User Data Script"
-                cmd.exe /c winrm quickconfig -q 
-                cmd.exe /c winrm quickconfig '-transport:http'
-                cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
-                cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
-                cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
-                cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
-                cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
-                cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
-                cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
-                cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
-                cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
-                cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
-                cmd.exe /c net stop winrm
-                cmd.exe /c sc config winrm start= auto
-                cmd.exe /c net start winrm
-                write-output "Script End...." >> c:\itest.log
-          gcpAuthScopes:
-            - scope: CLOUD_PLATFORM
-              notConfigurable: true
-          machineType:
-            defaultMachineType:
-              gceMachineType: e2-standard-4
-          networkInterfaces:
-            minCount: 1
-        - name: iautomatewinvmapp
-          title: iautomatewinvmapp
-          bootDisk:
-            diskSize:
-              defaultSizeGb: 80
-              minSizeGb: 80
-            diskType:
-              defaultType: pd-standard
-          images:
-            - name: windows-server-2016-dc-v20210608
-              project: windows-cloud
-          instanceCount:
-            defaultValue: 1
-          gce_metadata_items:
-            - key: windows-startup-script-ps1
-              value: |
-                $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force 
-                New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account." 
-                Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
-                write-output "Running User Data Script" >> test.txt
-                write-host "(host) Running User Data Script"
-                cmd.exe /c winrm quickconfig -q 
-                cmd.exe /c winrm quickconfig '-transport:http'
-                cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
-                cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
-                cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
-                cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
-                cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
-                cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
-                cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
-                cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
-                cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
-                cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
-                cmd.exe /c net stop winrm
-                cmd.exe /c sc config winrm start= auto
-                cmd.exe /c net start winrm
-          gcpAuthScopes:
-            - scope: CLOUD_PLATFORM
-              notConfigurable: true
-          machineType:
-            defaultMachineType:
-              gceMachineType: e2-standard-4
-          networkInterfaces:
-            minCount: 1
-        - name: iautomatelinuxvmansible
-          title: iautomatelinuxvmansible
-          bootDisk:
-            diskSize:
-              defaultSizeGb: 80
-              minSizeGb: 80
-            diskType:
-              defaultType: pd-standard
-          images:
-            - name: rhel-7-v20210609
-              project: rhel-cloud
-          instanceCount:
-            defaultValue: 1
-          gceStartupScript:
-            bashScriptContent: |-
-              sudo su -
-              yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-              yum install ansible -y
-              /bin/sleep 20
-              yum install gcc krb5-devel krb5-workstation -y
-              /bin/sleep 20
-              yum install python-setuptools -y
-              /bin/sleep 20
-              yum install python-pip -y
-              /bin/sleep 20
-              pip install pywinrm
-              mkdir /etc/ansible/group_vars
-              cd /etc/ansible
-              gsutil cp gs://dryiceiautomate-staging/hosts .
+      - name: iautomatewinvmweb
+        title: iautomatewinvmweb
+        bootDisk:
+          diskSize:
+            defaultSizeGb: 80
+            minSizeGb: 80
+          diskType:
+            defaultType: pd-standard
+        images:
+        - name: windows-server-2016-dc-v20210608
+          project: windows-cloud
+        instanceCount:
+          defaultValue: 1
+        gce_metadata_items:
+        - key: windows-startup-script-ps1
+          value: |
+            $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force
+            New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account."
+            Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
+            write-output "Running User Data Script" >> test.txt
+            write-host "(host) Running User Data Script"
+            cmd.exe /c winrm quickconfig -q
+            cmd.exe /c winrm quickconfig '-transport:http'
+            cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
+            cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
+            cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
+            cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
+            cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
+            cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
+            cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
+            cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
+            cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
+            cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
+            cmd.exe /c net stop winrm
+            cmd.exe /c sc config winrm start= auto
+            cmd.exe /c net start winrm
+            cmd.exe /c net user Administrator Qazxsw@123
+            cmd.exe /c net user administrator /active:yes
+        gcpAuthScopes:
+        - scope: CLOUD_PLATFORM
+          notConfigurable: true
+        machineType:
+          defaultMachineType:
+            gceMachineType: e2-standard-4
+        networkInterfaces:
+          minCount: 1
+        firewallRules: &FIREWALL_RULES
+        - protocol: TCP
+          port: '80'
+        - protocol: TCP
+          port: '8006'
+        - protocol: TCP
+          port: '8009'
+        - protocol: TCP
+          port: '8012'
+        - protocol: TCP
+          port: '8015'
+        - protocol: TCP
+          port: '8018'
+        - protocol: TCP
+          port: '8021'
+        - protocol: TCP
+          port: '8024'
+        - protocol: TCP
+          port: '8027'
+        - protocol: TCP
+          port: '8030'
+        - protocol: TCP
+          port: '8080'
+        - protocol: TCP
+          port: '9000'
+        - protocol: TCP
+          port: '9003'
+        - protocol: TCP
+          port: '9006'
+        - protocol: TCP
+          port: '9009'
+        - protocol: TCP
+          port: '9013'
+        - protocol: TCP
+          port: '9016'
+        - protocol: TCP
+          port: '9019'
+        - protocol: TCP
+          port: '9022'
+        - protocol: TCP
+          port: '9025'
+      - name: iautomatewinvmsql
+        title: iautomatewinvmsql
+        bootDisk:
+          diskSize:
+            defaultSizeGb: 80
+            minSizeGb: 80
+          diskType:
+            defaultType: pd-standard
+        images:
+        - name: sql-2017-web-windows-2019-dc-v20210608
+          project: windows-sql-cloud
+        instanceCount:
+          defaultValue: 1
+        gce_metadata_items:
+        - key: windows-startup-script-ps1
+          value: |
+            $Query = @"
+            USE [master];
+            GO
+            CREATE LOGIN admin
+            WITH PASSWORD    = N'h8n5b3U3M4C1',
+            CHECK_POLICY     = OFF,
+            CHECK_EXPIRATION = OFF;
+            GO
+            EXEC sp_addsrvrolemember 
+            @loginame = N'admin', 
+            @rolename = N'sysadmin';
+            "@
+            Invoke-Sqlcmd -ServerInstance localhost -Query $Query
+            write-output "User Creation Done...." >> c:\itest.log
+            $Query = @"
+            USE [master]
+            GO
+            EXEC xp_instance_regwrite N'HKEY_LOCAL_MACHINE', 
+            N'Software\Microsoft\MSSQLServer\MSSQLServer',
+            N'LoginMode', REG_DWORD, 2
+            GO
+            "@
+            Invoke-Sqlcmd -ServerInstance localhost -Query $Query
+            Stop-Service MSSQLSERVER
+            Start-Service MSSQLSERVER         
+            start-sleep -s 10
+            write-output "User SQL Authentication Done...." >> c:\itest.log
+            $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force 
+            New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account." 
+            Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
+            write-output "User Creation Done...." >> c:\itest.log
+            write-output "Running User Data Script" >> test.txt
+            write-host "(host) Running User Data Script"
+            cmd.exe /c winrm quickconfig -q 
+            cmd.exe /c winrm quickconfig '-transport:http'
+            cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
+            cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
+            cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
+            cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
+            cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
+            cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
+            cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
+            cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
+            cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
+            cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
+            cmd.exe /c net stop winrm
+            cmd.exe /c sc config winrm start= auto
+            cmd.exe /c net start winrm
+            write-output "Script End...." >> c:\itest.log
+        gcpAuthScopes:
+        - scope: CLOUD_PLATFORM
+          notConfigurable: true
+        machineType:
+          defaultMachineType:
+            gceMachineType: e2-standard-4
+        networkInterfaces:
+          minCount: 1
+        firewallRules: *FIREWALL_RULES
+      - name: iautomatewinvmapp
+        title: iautomatewinvmapp
+        bootDisk:
+          diskSize:
+            defaultSizeGb: 80
+            minSizeGb: 80
+          diskType:
+            defaultType: pd-standard
+        images:
+        - name: windows-server-2016-dc-v20210608
+          project: windows-cloud
+        instanceCount:
+          defaultValue: 1
+        gce_metadata_items:
+        - key: windows-startup-script-ps1
+          value: |
+            $Password = "Qazxsw@123" | ConvertTo-SecureString -AsPlainText -Force 
+            New-LocalUser "AdministratorAnsible" -Password $Password -FullName "AdministratorAnsible" -Description "Description of this account." 
+            Add-LocalGroupMember -Group "Administrators" -Member "AdministratorAnsible"
+            write-output "Running User Data Script" >> test.txt
+            write-host "(host) Running User Data Script"
+            cmd.exe /c winrm quickconfig -q 
+            cmd.exe /c winrm quickconfig '-transport:http'
+            cmd.exe /c winrm set "winrm/config" '@{MaxTimeoutms="1800000"}'
+            cmd.exe /c winrm set "winrm/config/winrs" '@{MaxMemoryPerShellMB="512"}'
+            cmd.exe /c winrm set "winrm/config/service" '@{AllowUnencrypted="true"}'
+            cmd.exe /c winrm set "winrm/config/client" '@{AllowUnencrypted="true"}'
+            cmd.exe /c winrm set "winrm/config/service/auth" '@{Basic="true"}'
+            cmd.exe /c winrm set "winrm/config/client/auth" '@{Basic="true"}'
+            cmd.exe /c winrm set "winrm/config/service/auth" '@{CredSSP="true"}'
+            cmd.exe /c winrm set "winrm/config/listener?Address=*+Transport=HTTP" '@{Port="5985"}'
+            cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes
+            cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985"
+            cmd.exe /c net stop winrm
+            cmd.exe /c sc config winrm start= auto
+            cmd.exe /c net start winrm
+        gcpAuthScopes:
+        - scope: CLOUD_PLATFORM
+          notConfigurable: true
+        machineType:
+          defaultMachineType:
+            gceMachineType: e2-standard-4
+        networkInterfaces:
+          minCount: 1
+        firewallRules: *FIREWALL_RULES
+      - name: iautomatelinuxvmansible
+        title: iautomatelinuxvmansible
+        bootDisk:
+          diskSize:
+            defaultSizeGb: 80
+            minSizeGb: 80
+          diskType:
+            defaultType: pd-standard
+        images:
+        - name: rhel-7-v20210609
+          project: rhel-cloud
+        instanceCount:
+          defaultValue: 1
+        gceStartupScript:
+          bashScriptContent: |-
+            sudo su -
+            yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            yum install ansible -y
+            /bin/sleep 20
+            yum install gcc krb5-devel krb5-workstation -y
+            /bin/sleep 20
+            yum install python-setuptools -y
+            /bin/sleep 20
+            yum install python-pip -y
+            /bin/sleep 20
+            pip install pywinrm
+            mkdir /etc/ansible/group_vars
+            cd /etc/ansible
+            gsutil cp gs://dryiceiautomate-staging/hosts .
 
-              echo "******Creating User*******" >> /tmp/iautomate.log
-              useradd ansible
-              usermod -aG wheel ansible
-              sudo passwd ansible
-              echo Qazxsw@123 | passwd ansible  --stdin
+            echo "******Creating User*******" >> /tmp/iautomate.log
+            useradd ansible
+            usermod -aG wheel ansible
+            sudo passwd ansible
+            echo Qazxsw@123 | passwd ansible  --stdin
 
-              echo "******Downloading Resource Files*******" >> /tmp/iautomate.log
-              gsutil cp gs://dryiceiautomate-staging/jenkins-sa.json .
-              gsutil cp gs://dryiceiautomate-staging/ansible_varibales_template.txt .
-              gcloud auth activate-service-account --key-file=jenkins-sa.json
-              gsutil cp gs://dryiceiautomate-staging/host.txt /etc/ansible/group_vars
-              gsutil cp gs://dryiceiautomate-staging/awx.yml /etc/ansible/group_vars
-              gsutil cp gs://dryiceiautomate-staging/iautomate.yml /etc/ansible/group_vars
-              sudo chmod 777 host.txt
-              mkdir -p /etc/ansible/resources
-              cd /etc/ansible/resources
-              gsutil cp -r gs://dryiceiautomate-staging/reource/roles.zip .
-              /bin/sleep 1m
-              sudo yum install unzip -y
-              /bin/sleep 1m
+            echo "******Downloading Resource Files*******" >> /tmp/iautomate.log
+            gsutil cp gs://dryiceiautomate-staging/jenkins-sa.json .
+            gsutil cp gs://dryiceiautomate-staging/ansible_varibales_template.txt .
+            gcloud auth activate-service-account --key-file=jenkins-sa.json
+            gsutil cp gs://dryiceiautomate-staging/host.txt /etc/ansible/group_vars
+            gsutil cp gs://dryiceiautomate-staging/awx.yml /etc/ansible/group_vars
+            gsutil cp gs://dryiceiautomate-staging/iautomate.yml /etc/ansible/group_vars
+            sudo chmod 777 host.txt
+            mkdir -p /etc/ansible/resources
+            cd /etc/ansible/resources
+            gsutil cp -r gs://dryiceiautomate-staging/reource/roles.zip .
+            /bin/sleep 1m
+            sudo yum install unzip -y
+            /bin/sleep 1m
 
-              echo "******Unziping Role Folder*******" >> /tmp/iautomate.log
-              unzip roles.zip
-              /bin/sleep 1m
+            echo "******Unziping Role Folder*******" >> /tmp/iautomate.log
+            unzip roles.zip
+            /bin/sleep 1m
 
-              echo "******Updating IP in files*******" >> /tmp/iautomate.log
-              zoo_ip1=$(grep "zoo_ip1:" /etc/ansible/resources/roles/common_variables.yml)
-              ai_server=$(grep "ai_server:" /etc/ansible/resources/roles/common_variables.yml)
-              mongo_server=$(grep "mongo_server:" /etc/ansible/resources/roles/common_variables.yml)
-              solr_server=$(grep "solr_server:" /etc/ansible/resources/roles/common_variables.yml)
-              web_server=$(grep "web_server:" /etc/ansible/resources/roles/common_variables.yml)
-              app_server=$(grep "app_server:" /etc/ansible/resources/roles/common_variables.yml)
-              sql_server=$(grep "sql_server:" /etc/ansible/resources/roles/common_variables.yml)
-              awx_ip=$(grep "awx_ip:" /etc/ansible/resources/roles/common_variables.yml)
-              export ExtIP_Win1=$(gcloud compute instances describe iautomatewinvmweb --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
-              export ExtIP_Win2=$(gcloud compute instances describe iautomatewinvmsql --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
-              export ExtIP_Win3=$(gcloud compute instances describe iautomatewinvmapp --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
-              export ExtIP_Linux4=$(gcloud compute instances describe iautomatelinuxvmansible	 --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
+            echo "******Updating IP in files*******" >> /tmp/iautomate.log
+            zoo_ip1=$(grep "zoo_ip1:" /etc/ansible/resources/roles/common_variables.yml)
+            ai_server=$(grep "ai_server:" /etc/ansible/resources/roles/common_variables.yml)
+            mongo_server=$(grep "mongo_server:" /etc/ansible/resources/roles/common_variables.yml)
+            solr_server=$(grep "solr_server:" /etc/ansible/resources/roles/common_variables.yml)
+            web_server=$(grep "web_server:" /etc/ansible/resources/roles/common_variables.yml)
+            app_server=$(grep "app_server:" /etc/ansible/resources/roles/common_variables.yml)
+            sql_server=$(grep "sql_server:" /etc/ansible/resources/roles/common_variables.yml)
+            awx_ip=$(grep "awx_ip:" /etc/ansible/resources/roles/common_variables.yml)
+            export ExtIP_Win1=$(gcloud compute instances describe iautomatewinvmweb --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
+            export ExtIP_Win2=$(gcloud compute instances describe iautomatewinvmsql --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
+            export ExtIP_Win3=$(gcloud compute instances describe iautomatewinvmapp --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
+            export ExtIP_Linux4=$(gcloud compute instances describe iautomatelinuxvmansible	 --zone='us-west1-b' --format='get(networkInterfaces[0].networkIP)')
 
-              new_zoo_ip1="zoo_ip1: $ExtIP_Win3"
-              new_ai_server="ai_server: $ExtIP_Win3"
-              new_mongo_server="mongo_server: $ExtIP_Win3"
-              new_solr_server="solr_server: $ExtIP_Win3"
-              new_web_server="web_server: $ExtIP_Win1"
-              new_app_server="app_server: $ExtIP_Win1"
-              new_sql_server="sql_server: $ExtIP_Win2"
-              new_awx_ip="awx_ip: $ExtIP_Linux4"
+            new_zoo_ip1="zoo_ip1: $ExtIP_Win3"
+            new_ai_server="ai_server: $ExtIP_Win3"
+            new_mongo_server="mongo_server: $ExtIP_Win3"
+            new_solr_server="solr_server: $ExtIP_Win3"
+            new_web_server="web_server: $ExtIP_Win1"
+            new_app_server="app_server: $ExtIP_Win1"
+            new_sql_server="sql_server: $ExtIP_Win2"
+            new_awx_ip="awx_ip: $ExtIP_Linux4"
 
-              sed -i "s|$zoo_ip1|$new_zoo_ip1|g" /etc/ansible/resources/roles/common_variables.yml
-              sed -i "s|$ai_server|$new_ai_server|g" /etc/ansible/resources/roles/common_variables.yml
-              sed -i "s|$mongo_server|$new_mongo_server|g" /etc/ansible/resources/roles/common_variables.yml
-              sed -i "s|$solr_server|$new_solr_server|g" /etc/ansible/resources/roles/common_variables.yml
-              sed -i "s|$web_server|$new_web_server|g" /etc/ansible/resources/roles/common_variables.yml
-              sed -i "s|$app_server|$new_app_server|g" /etc/ansible/resources/roles/common_variables.yml
-              sed -i "s|$sql_server|$new_sql_server|g" /etc/ansible/resources/roles/common_variables.yml
-              sed -i "s|$awx_ip|$new_awx_ip|g" /etc/ansible/resources/roles/common_variables.yml
-              sed -i "s|PasswordAuthentication no|PasswordAuthentication yes|g" /etc/ssh/sshd_config
-              sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config
-              sed -i "s|#   PasswordAuthentication yes|   PasswordAuthentication yes|g" /etc/ssh/ssh_config
-              service sshd restart
-              chmod 0777 /etc/sudoers
-              chmod 0777 /etc/ansible/ansible.cfg
-              sed -i "s|#host_key_checking |host_key_checking |g" /etc/ansible/ansible.cfg
-              chmod 0644 /etc/ansible/ansible.cfg
-              echo "ansible        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
-              chmod 0440 /etc/sudoers
-              server1=$(grep "SERVER1" /etc/ansible/hosts | cut -d":" -f2)
-              serverweb=$(echo $server1 | cut -d" " -f2)
-              sed -i "s|$serverweb|$ExtIP_Win1|g" /etc/ansible/hosts
-              server2=$(grep "SERVER2" /etc/ansible/hosts | cut -d":" -f2)
-              serverser3=$(echo $server2 | cut -d" " -f2)
-              sed -i "s|$serverser3|$ExtIP_Win3|g" /etc/ansible/hosts
-              server3=$(grep "SERVER3" /etc/ansible/hosts | cut -d":" -f2)
-              serversql=$(echo $server3| cut -d" " -f2)
-              sed -i "s|$serversql|$ExtIP_Win2|g" /etc/ansible/hosts
-              linux_server1=$(grep "linux_server1" /etc/ansible/hosts | cut -d":" -f2)
-              awx_linux_server1=$(echo $linux_server1| cut -d" " -f2)
-              sed -i "s|$awx_linux_server1|$ExtIP_Linux4|g" /etc/ansible/hosts
+            sed -i "s|$zoo_ip1|$new_zoo_ip1|g" /etc/ansible/resources/roles/common_variables.yml
+            sed -i "s|$ai_server|$new_ai_server|g" /etc/ansible/resources/roles/common_variables.yml
+            sed -i "s|$mongo_server|$new_mongo_server|g" /etc/ansible/resources/roles/common_variables.yml
+            sed -i "s|$solr_server|$new_solr_server|g" /etc/ansible/resources/roles/common_variables.yml
+            sed -i "s|$web_server|$new_web_server|g" /etc/ansible/resources/roles/common_variables.yml
+            sed -i "s|$app_server|$new_app_server|g" /etc/ansible/resources/roles/common_variables.yml
+            sed -i "s|$sql_server|$new_sql_server|g" /etc/ansible/resources/roles/common_variables.yml
+            sed -i "s|$awx_ip|$new_awx_ip|g" /etc/ansible/resources/roles/common_variables.yml
+            sed -i "s|PasswordAuthentication no|PasswordAuthentication yes|g" /etc/ssh/sshd_config
+            sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config
+            sed -i "s|#   PasswordAuthentication yes|   PasswordAuthentication yes|g" /etc/ssh/ssh_config
+            service sshd restart
+            chmod 0777 /etc/sudoers
+            chmod 0777 /etc/ansible/ansible.cfg
+            sed -i "s|#host_key_checking |host_key_checking |g" /etc/ansible/ansible.cfg
+            chmod 0644 /etc/ansible/ansible.cfg
+            echo "ansible        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
+            chmod 0440 /etc/sudoers
+            server1=$(grep "SERVER1" /etc/ansible/hosts | cut -d":" -f2)
+            serverweb=$(echo $server1 | cut -d" " -f2)
+            sed -i "s|$serverweb|$ExtIP_Win1|g" /etc/ansible/hosts
+            server2=$(grep "SERVER2" /etc/ansible/hosts | cut -d":" -f2)
+            serverser3=$(echo $server2 | cut -d" " -f2)
+            sed -i "s|$serverser3|$ExtIP_Win3|g" /etc/ansible/hosts
+            server3=$(grep "SERVER3" /etc/ansible/hosts | cut -d":" -f2)
+            serversql=$(echo $server3| cut -d" " -f2)
+            sed -i "s|$serversql|$ExtIP_Win2|g" /etc/ansible/hosts
+            linux_server1=$(grep "linux_server1" /etc/ansible/hosts | cut -d":" -f2)
+            awx_linux_server1=$(echo $linux_server1| cut -d" " -f2)
+            sed -i "s|$awx_linux_server1|$ExtIP_Linux4|g" /etc/ansible/hosts
 
-              echo "******Installing iAutomate *******" >> /tmp/iautomate.log
-              echo "vault" > /etc/ansible/vault
-              cd /etc/ansible/resources/roles
-              ansible-playbook iautomate_installation_all.yml --vault-password-file /etc/ansible/vault  >> /tmp/iautomate.log
-          gcpAuthScopes:
-            - scope: CLOUD_PLATFORM
-              notConfigurable: true
-          machineType:
-            defaultMachineType:
-              gceMachineType: e2-standard-4
-          networkInterfaces:
-            minCount: 1
+            echo "******Installing iAutomate *******" >> /tmp/iautomate.log
+            echo "vault" > /etc/ansible/vault
+            cd /etc/ansible/resources/roles
+            ansible-playbook iautomate_installation_all.yml --vault-password-file /etc/ansible/vault  >> /tmp/iautomate.log
+        gcpAuthScopes:
+        - scope: CLOUD_PLATFORM
+          notConfigurable: true
+        machineType:
+          defaultMachineType:
+            gceMachineType: e2-standard-4
+        networkInterfaces:
+          minCount: 1
+        firewallRules: *FIREWALL_RULES
